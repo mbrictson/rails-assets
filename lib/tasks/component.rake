@@ -11,6 +11,23 @@ namespace :component do
     result
   end
 
+  desc "Converts given bower component to Gem but doesn't build or index it"
+  task :stage, [:name, :version] => [:environment] do |t, args|
+    FileUtils.mkdir_p("stage")
+    name, version = args[:name], args[:version]
+
+    Build::Converter.install!(name, version) do |components|
+      components.each do |component|
+        Build::Converter.convert!(component) do |output_dir, _, _|
+          dest = "stage/#{component.name}-#{component.gem.version}"
+          FileUtils.rm_rf(dest)
+          FileUtils.cp_r(output_dir, dest)
+          ::Rails.logger.info(dest)
+        end
+      end
+    end
+  end
+
   desc "Schedules update of all components"
   task :update_all => [:environment] do |t, args|
     UpdateScheduler.perform_async
