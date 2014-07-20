@@ -75,6 +75,10 @@ module Build
     end
 
     def full_name
+      if explicit_name = data['pkgMeta']['gem']
+        return explicit_name
+      end
+
       source = data['endpoint']['source']
       source = source.sub(/#.*$/, '')
       source = source.sub(/\.git$/, '')
